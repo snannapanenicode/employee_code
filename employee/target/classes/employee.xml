@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="cd30ed8d-5e77-41bf-bc46-b8e29f774103" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<http:listener-config name="HTTP_Listener_config_1" doc:name="HTTP Listener config" doc:id="d5401a48-77ff-40b0-8353-356586582114" >
+		<http:listener-connection host="localhost" port="8082" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="88eb504c-597b-4d8b-86ff-b2f6d2ec5abe" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<flow name="employee_codeFlow" doc:id="7d3ee29a-3786-469f-895c-da1ca939ecaa" >
+		<http:listener doc:name="Listener" doc:id="9b657cf6-b759-4810-a6e2-71cb9bfe9ae3" config-ref="HTTP_Listener_config_1" path="/"/>
+		<http:request method="POST" doc:name="Request" doc:id="9dbad96d-d03e-457f-bb92-b874d8c6ca52" config-ref="HTTP_Request_configuration1" path="/api/employeedetails"/>
+		<ee:transform doc:name="Transform Message" doc:id="b178fd6f-584d-4d13-9353-1edffcb89a4c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="output_ 2" doc:id="e3cc731d-15b5-48a1-bd74-45d040c9dac6" message="#[payload]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="e9c6608e-c939-4d35-a93a-ecd65d165bf8" name="employee_codeSub_Flow"/>
+	</flow>
+	<sub-flow name="employee_codeSub_Flow" doc:id="e7ac1989-06aa-47a0-b921-e694789e1da7" >
+		<java:new doc:name="New" doc:id="032fdf8e-6979-4b94-9efe-f72a90fe6e0c" class="com.employee_code.ConvertToUpperCase" constructor="ConvertToUpperCase()" target="inst"/>
+		<java:invoke doc:name="Invoke" doc:id="3f843b3e-5247-4a01-9a33-093931584a55" instance="#[vars.inst]" class="com.employee_code.ConvertToUpperCase" method="wait(long)">
+			<java:args ><![CDATA[#[{
+arg0: payload as String
+
+}]]]></java:args>
+		</java:invoke>
+		<logger level="INFO" doc:name="output_3" doc:id="cab961c6-09a9-41fa-bf12-e41281745946" message="#[payload]" />
+	</sub-flow>
+	<flow name="employee_codeFlow2" doc:id="3ff2331c-52f2-43a6-b4aa-7785b80a350c" >
+		<scheduler doc:name="Scheduler" doc:id="dabc61f6-1db1-493e-96ef-ff432094be7c" >
+			<scheduling-strategy >
+				<fixed-frequency startDelay="2" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<set-variable value='#[{ 
+   "employee":[ 
+      { 
+         "id":"A007",
+         "first_name":"Jan",
+         "last_name":"Doe"
+      },
+      { 
+         "id":"A008",
+         "first_name":"Ron",
+         "last_name":"David"
+      },
+      { 
+         "id":"A009",
+         "first_name":"Jane",
+         "last_name":"Kane"
+      },
+      { 
+         "id":"A010",
+         "first_name":"Marsh",
+         "last_name":"Megan"
+      },
+      { 
+         "id":"A011",
+         "first_name":"Kelly",
+         "last_name":"Mitch"
+      },
+      { 
+         "id":"A012",
+         "first_name":"Chris",
+         "last_name":"Vaste"
+      }
+   ]
+}]' doc:name="Set Variable" doc:id="f78909c0-32a6-420f-897f-849055b31884" variableName="input_1"/>
+		<set-variable value='#[{ 
+   "scoreBoard":[ 
+      { 
+         "id":"A007",
+         "subjects":[ 
+            "Maths",
+            "English",
+            "Arts",
+            "Drawimgs"
+         ],
+         "score":[ 
+            80,
+            75,
+            89,
+            100
+         ]
+      },
+      { 
+         "id":"A008",
+         "subjects":[ 
+            "Maths",
+            "English",
+            "Arts",
+            "Drawimgs"
+         ],
+         "score":[ 
+            70,
+            85,
+            69,
+            90
+         ]
+      },
+      { 
+         "id":"A021",
+         "subjects":[ 
+            "Maths",
+            "English",
+            "Arts",
+            "Drawimgs"
+         ],
+         "score":[ 
+            90,
+            87,
+            77,
+            95
+         ]
+      }
+   ]
+}]' doc:name="Set Variable" doc:id="79bb6f94-859a-47c5-8b00-d823e5e24229" variableName="input_2"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="24af9cc0-d65a-4ee6-94e9-89a36a00d4eb" >
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="07c861bb-66f6-426e-8556-1a25af356adb">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+certificate:(vars.input_1.employee map ((input_1, indexInput_1) -> {
+	(vars.input_2.scoreBoard filter($.id  == input_1.id) map((marks,indexMarks) -> {
+	     "id":input_1.id,
+         "firstName":input_1.first_name,
+         "LastName":input_1.last_name,
+
+   	
+"MarksBySubjectWise": (marks.score map ((score, indexscore) -> 
+	
+	
+ (marks.subjects[indexscore]) : score 
+ 
+
+	
+	
+	
+))
+  
+   	
+   	
+ 
+   	
+ 
+	}))
+}))filter($ !={})
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="output4.1" doc:id="e7c3aece-9644-41e5-a4d2-9f456b8c41d6" message="#[payload]" />
+			</route>
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="31c7ef32-1f43-4acb-966e-d96fd8e70987" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+certificate:(vars.input_1.employee map ((input_1, indexInput_1) -> {
+	(vars.input_2.scoreBoard filter($.id  != input_1.id) map((marks,indexMarks) -> {
+	     "id":input_1.id,
+         "firstName":input_1.first_name,
+         "LastName":input_1.last_name,
+
+   	
+"MarksBySubjectWise": (marks.score map ((score, indexscore) -> 
+	
+	
+ (marks.subjects[indexscore]) : score 
+ 
+
+	
+	
+	
+))
+  
+   	
+   	
+ 
+   	
+ 
+	}))
+}))filter($ !={})
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="output4.2" doc:id="88f96c52-7acf-4559-a3c7-acfe283006e0" message="#[payload]"/>
+			</route>
+		</scatter-gather>
+	</flow>
+</mule>
